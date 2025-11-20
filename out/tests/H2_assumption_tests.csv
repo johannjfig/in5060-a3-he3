@@ -1,0 +1,8 @@
+Test,Statistic,p_value,Passed,Interpretation
+Levene's Test,0.9627501245003935,0.4301996589524094,True,PASSED - Variances are homogeneous (p >= 0.05)
+Shapiro-Wilk (Residuals),0.9643141627311707,0.001026248442940414,False,FAILED - Data is NOT normally distributed (p < 0.05)
+Shapiro-Wilk (Group 0),0.9263607263565063,0.039338674396276474,False,FAILED - Data is NOT normally distributed (p < 0.05)
+Shapiro-Wilk (Group 50),0.8878365755081177,0.006006947718560696,False,FAILED - Data is NOT normally distributed (p < 0.05)
+Shapiro-Wilk (Group 100),0.9191223978996277,0.032997976988554,False,FAILED - Data is NOT normally distributed (p < 0.05)
+Shapiro-Wilk (Group 150),0.896475076675415,0.011118811555206776,False,FAILED - Data is NOT normally distributed (p < 0.05)
+Shapiro-Wilk (Group 200),0.8674437999725342,0.002602516207844019,False,FAILED - Data is NOT normally distributed (p < 0.05)

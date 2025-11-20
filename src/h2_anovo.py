@@ -503,7 +503,8 @@ def main(csv_path):
     
     # Assumption tests
     if HAS_ASSUMPTION_TESTS:
-        assumption_path = os.path.join(output_dir, 'H2_assumption_tests.csv')
+        assumption_dir = 'out/tests'
+        assumption_path = os.path.join(assumption_dir, 'H2_assumption_tests.csv')
         save_assumption_tests(assumption_results, assumption_path)
         print(f"  Saved: {assumption_path}")
     
