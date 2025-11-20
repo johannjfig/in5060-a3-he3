@@ -627,7 +627,7 @@ def main(xlsx_path):
     print("\n5. CREATING PLOTS")
     print("-"*70)
     # Use h3data directory for outputs
-    output_dir = 'h3data'
+    output_dir = 'out/h3out'
     os.makedirs(output_dir, exist_ok=True)
     trial_means = create_plots(long_df, output_dir)
     

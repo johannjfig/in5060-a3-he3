@@ -646,7 +646,7 @@ def main(csv_path):
     # Create plots
     print("\n5. CREATING PLOTS")
     print("-"*70)
-    output_dir = 'h4data'
+    output_dir = 'out/h4out'
     # Create output directory if it doesn't exist
     os.makedirs(output_dir, exist_ok=True)
     latency_means = create_correlation_plots(long_df, participant_means, output_dir)

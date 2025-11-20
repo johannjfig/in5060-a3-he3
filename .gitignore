@@ -1,4 +1,6 @@
 data/
-h3data/
-h4data/
+out/h1out/
+out/h2out/
+out/h3out/
+out/h4out/
 .vscode/
