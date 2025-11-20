@@ -1,0 +1,13 @@
+Test,Statistic,p_value,Passed,Interpretation
+Levene's Test,0.5844961240310079,0.8096199426287642,True,PASSED - Variances are homogeneous (p >= 0.05)
+Shapiro-Wilk (Residuals),0.9630943536758423,6.475009968198719e-07,False,FAILED - Data is NOT normally distributed (p < 0.05)
+Shapiro-Wilk (Group 1),0.8109705448150635,0.00010457648022565991,False,FAILED - Data is NOT normally distributed (p < 0.05)
+Shapiro-Wilk (Group 2),0.8708447217941284,0.0017494242638349533,False,FAILED - Data is NOT normally distributed (p < 0.05)
+Shapiro-Wilk (Group 3),0.8630355596542358,0.0011769444681704044,False,FAILED - Data is NOT normally distributed (p < 0.05)
+Shapiro-Wilk (Group 4),0.8713434338569641,0.0017948625609278679,False,FAILED - Data is NOT normally distributed (p < 0.05)
+Shapiro-Wilk (Group 5),0.8849096298217773,0.003662147792056203,False,FAILED - Data is NOT normally distributed (p < 0.05)
+Shapiro-Wilk (Group 6),0.8815478682518005,0.0030602067708969116,False,FAILED - Data is NOT normally distributed (p < 0.05)
+Shapiro-Wilk (Group 7),0.8799151182174683,0.0028065447695553303,False,FAILED - Data is NOT normally distributed (p < 0.05)
+Shapiro-Wilk (Group 8),0.8764522075653076,0.0023394287563860416,False,FAILED - Data is NOT normally distributed (p < 0.05)
+Shapiro-Wilk (Group 9),0.9095563888549805,0.014502186328172684,False,FAILED - Data is NOT normally distributed (p < 0.05)
+Shapiro-Wilk (Group 10),0.8810524344444275,0.0029807607643306255,False,FAILED - Data is NOT normally distributed (p < 0.05)

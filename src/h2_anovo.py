@@ -23,6 +23,17 @@ import matplotlib.pyplot as plt
 import sys
 import os
 
+# Import assumption tests module
+try:
+    from assumption_tests import (
+        check_missing_values, print_missing_values_report,
+        print_assumption_tests, save_assumption_tests
+    )
+    HAS_ASSUMPTION_TESTS = True
+except ImportError:
+    HAS_ASSUMPTION_TESTS = False
+    print("Note: assumption_tests.py not found - skipping assumption checks")
+
 # Try to import seaborn for nicer plots
 try:
     import seaborn as sns
@@ -408,6 +419,20 @@ def main(csv_path):
     print(f"\nOverall: M = {long_df['Blocks'].mean():.2f}, SD = {long_df['Blocks'].std():.2f}")
     print(f"Range: {long_df['Blocks'].min()} - {long_df['Blocks'].max()}")
     
+    # Check preprocessing and assumptions
+    if HAS_ASSUMPTION_TESTS:
+        print("\n2b. PREPROCESSING CHECK")
+        print("-"*70)
+        missing = check_missing_values(long_df, ['Blocks', 'Latency'])
+        print_missing_values_report(missing)
+        
+        print("\n2c. ANOVA ASSUMPTION TESTS")
+        print("-"*70)
+        assumption_results = print_assumption_tests(
+            long_df, 'Blocks', 'Latency', 
+            'Blocks Moved', 'Latency'
+        )
+    
     # Trend analysis
     print("\n3. LINEAR TREND ANALYSIS")
     print("-"*70)
@@ -475,6 +500,12 @@ def main(csv_path):
     # Long format data
     long_df.to_csv(os.path.join(output_dir, 'H2_long_format_data.csv'), index=False)
     print(f"  Saved: {output_dir}/H2_long_format_data.csv")
+    
+    # Assumption tests
+    if HAS_ASSUMPTION_TESTS:
+        assumption_path = os.path.join(output_dir, 'H2_assumption_tests.csv')
+        save_assumption_tests(assumption_results, assumption_path)
+        print(f"  Saved: {assumption_path}")
     
     # Summary
     print("\n" + "="*70)

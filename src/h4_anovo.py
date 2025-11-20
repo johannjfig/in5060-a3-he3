@@ -23,6 +23,17 @@ import matplotlib.pyplot as plt
 import sys
 import os
 
+# Import assumption tests module
+try:
+    from assumption_tests import (
+        check_missing_values, print_missing_values_report,
+        print_assumption_tests, save_assumption_tests
+    )
+    HAS_ASSUMPTION_TESTS = True
+except ImportError:
+    HAS_ASSUMPTION_TESTS = False
+    print("Note: assumption_tests.py not found - skipping assumption checks")
+
 # Try to import seaborn for nicer plots
 try:
     import seaborn as sns
@@ -584,6 +595,24 @@ def main(csv_path):
     }).round(2)
     print(latency_stats.to_string())
     
+    # Check preprocessing and assumptions
+    if HAS_ASSUMPTION_TESTS:
+        print("\n2b. PREPROCESSING CHECK")
+        print("-"*70)
+        missing = check_missing_values(long_df, ['Difficulty', 'Control', 'Blocks', 'Latency'])
+        print_missing_values_report(missing)
+        
+        print("\n2c. ANOVA ASSUMPTION TESTS")
+        print("-"*70)
+        assumption_results_blocks = print_assumption_tests(
+            long_df, 'Blocks', 'Latency', 
+            'Blocks Moved', 'Latency'
+        )
+        assumption_results_diff = print_assumption_tests(
+            long_df, 'Difficulty', 'Latency', 
+            'Perceived Difficulty', 'Latency'
+        )
+    
     # Run correlations
     print("\n3. CORRELATION ANALYSIS")
     print("-"*70)
@@ -720,6 +749,19 @@ def main(csv_path):
     posthoc_diff_path = os.path.join(output_dir, 'H4_posthoc_difficulty.csv')
     posthoc_diff.to_csv(posthoc_diff_path, index=False)
     print(f"  Saved: {posthoc_diff_path}")
+    
+    # Assumption tests - save to separate directory
+    if HAS_ASSUMPTION_TESTS:
+        assumption_dir = 'out/tests'
+        os.makedirs(assumption_dir, exist_ok=True)
+        
+        assumption_blocks_path = os.path.join(assumption_dir, 'H4_assumption_tests_blocks.csv')
+        save_assumption_tests(assumption_results_blocks, assumption_blocks_path)
+        print(f"  Saved: {assumption_blocks_path}")
+        
+        assumption_diff_path = os.path.join(assumption_dir, 'H4_assumption_tests_difficulty.csv')
+        save_assumption_tests(assumption_results_diff, assumption_diff_path)
+        print(f"  Saved: {assumption_diff_path}")
     
     # Save latency means
     latency_path = os.path.join(output_dir, 'H4_latency_means.csv')

@@ -23,6 +23,17 @@ import matplotlib.pyplot as plt
 import sys
 import os
 
+# Import assumption tests module
+try:
+    from assumption_tests import (
+        check_missing_values, print_missing_values_report,
+        print_assumption_tests, save_assumption_tests
+    )
+    HAS_ASSUMPTION_TESTS = True
+except ImportError:
+    HAS_ASSUMPTION_TESTS = False
+    print("Note: assumption_tests.py not found - skipping assumption checks")
+
 # Try to import seaborn for nicer plots
 try:
     import seaborn as sns
@@ -432,6 +443,21 @@ def main(csv_path):
     }).round(3)
     print(latency_stats.to_string())
     
+    # Check preprocessing
+    if HAS_ASSUMPTION_TESTS:
+        print("\n2b. PREPROCESSING CHECK")
+        print("-"*70)
+        missing = check_missing_values(long_df, ['Difficulty', 'Control', 'Delay', 'Latency'])
+        print_missing_values_report(missing)
+        
+        # Assumption tests for Difficulty
+        print("\n2c. ANOVA ASSUMPTION TESTS")
+        print("-"*70)
+        assumption_results_diff = print_assumption_tests(
+            long_df, 'Difficulty', 'Latency', 
+            'Perceived Difficulty', 'Latency'
+        )
+    
     # Trend analysis
     print("\n3. LINEAR TREND ANALYSIS")
     print("-"*70)
@@ -516,6 +542,14 @@ def main(csv_path):
     # Long format data
     long_df.to_csv(os.path.join(output_dir, 'H1_long_format_data.csv'), index=False)
     print(f"  Saved: {output_dir}/H1_long_format_data.csv")
+    
+    # Assumption tests - save to separate directory
+    if HAS_ASSUMPTION_TESTS:
+        assumption_dir = 'out/tests'
+        os.makedirs(assumption_dir, exist_ok=True)
+        assumption_path = os.path.join(assumption_dir, 'H1_assumption_tests.csv')
+        save_assumption_tests(assumption_results_diff, assumption_path)
+        print(f"  Saved: {assumption_path}")
     
     # Summary
     print("\n" + "="*70)

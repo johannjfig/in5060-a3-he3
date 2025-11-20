@@ -21,6 +21,17 @@ import matplotlib.pyplot as plt
 import sys
 import os
 
+# Import assumption tests module
+try:
+    from assumption_tests import (
+        check_missing_values, print_missing_values_report,
+        print_assumption_tests, save_assumption_tests
+    )
+    HAS_ASSUMPTION_TESTS = True
+except ImportError:
+    HAS_ASSUMPTION_TESTS = False
+    print("Note: assumption_tests.py not found - skipping assumption checks")
+
 # Try to import pingouin for ANOVA, fall back to scipy if not available
 try:
     import pingouin as pg
@@ -540,6 +551,24 @@ def main(xlsx_path):
     ctrl_stats = calculate_descriptive_stats(control_data, participant_ids)
     print(ctrl_stats.to_string(index=False))
     
+    # Check preprocessing and assumptions
+    if HAS_ASSUMPTION_TESTS:
+        print("\n2b. PREPROCESSING CHECK")
+        print("-"*70)
+        missing = check_missing_values(long_df, ['Difficulty', 'Control', 'Trial'])
+        print_missing_values_report(missing)
+        
+        print("\n2c. ANOVA ASSUMPTION TESTS")
+        print("-"*70)
+        assumption_results_diff = print_assumption_tests(
+            long_df, 'Difficulty', 'Trial', 
+            'Perceived Difficulty', 'Trial'
+        )
+        assumption_results_ctrl = print_assumption_tests(
+            long_df, 'Control', 'Trial', 
+            'Control Feeling', 'Trial'
+        )
+    
     # Repeated-measures ANOVA
     print("\n3. REPEATED-MEASURES ANOVA")
     print("-"*70)
@@ -687,6 +716,19 @@ def main(xlsx_path):
     posthoc_path = os.path.join(output_dir, 'H3_ttest_trial1_vs_10.csv')
     posthoc_table.to_csv(posthoc_path, index=False)
     print(f"  Saved: {posthoc_path}")
+    
+    # Assumption tests - save to separate directory
+    if HAS_ASSUMPTION_TESTS:
+        assumption_dir = 'out/tests'
+        os.makedirs(assumption_dir, exist_ok=True)
+        
+        assumption_diff_path = os.path.join(assumption_dir, 'H3_assumption_tests_difficulty.csv')
+        save_assumption_tests(assumption_results_diff, assumption_diff_path)
+        print(f"  Saved: {assumption_diff_path}")
+        
+        assumption_ctrl_path = os.path.join(assumption_dir, 'H3_assumption_tests_control.csv')
+        save_assumption_tests(assumption_results_ctrl, assumption_ctrl_path)
+        print(f"  Saved: {assumption_ctrl_path}")
     
     # Summary
     print("\n" + "="*70)
