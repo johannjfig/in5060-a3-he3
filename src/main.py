@@ -5,7 +5,7 @@ Main Analysis Runner
 Runs all hypothesis analysis scripts (H1, H2, H3, H4) for the VR telepresence study.
 
 Usage (from project root directory):
-    python3 src/main.py out/combined.csv data/questionnaire_data.xlsx
+    python3 src/main.py out/combined.csv data/questionaire_data.xlsx
 
 This will run:
     - H1: Latency → Perceived Difficulty
