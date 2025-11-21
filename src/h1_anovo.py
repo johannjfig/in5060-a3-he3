@@ -27,7 +27,8 @@ import os
 try:
     from assumption_tests import (
         check_missing_values, print_missing_values_report,
-        print_assumption_tests, save_assumption_tests
+        print_assumption_tests, save_assumption_tests,
+        create_assumption_plots
     )
     HAS_ASSUMPTION_TESTS = True
 except ImportError:
@@ -550,6 +551,13 @@ def main(csv_path):
         assumption_path = os.path.join(assumption_dir, 'H1_assumption_tests.csv')
         save_assumption_tests(assumption_results_diff, assumption_path)
         print(f"  Saved: {assumption_path}")
+        
+        # Create assumption diagnostic plots
+        plot_path = create_assumption_plots(
+            long_df, 'Difficulty', 'Latency', assumption_dir, 'H1_difficulty',
+            'Perceived Difficulty', 'Latency (ms)'
+        )
+        print(f"  Saved: {plot_path}")
     
     # Summary
     print("\n" + "="*70)

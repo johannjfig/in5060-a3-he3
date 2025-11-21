@@ -13,6 +13,160 @@ Import this in your H1, H2, H3, H4 scripts.
 import pandas as pd
 import numpy as np
 from scipy import stats
+import os
+
+def create_assumption_plots(long_df, dv, iv, output_dir, prefix, dv_name=None, iv_name=None):
+    """
+    Create diagnostic plots for ANOVA assumptions.
+    
+    Generates:
+        - Histogram of residuals with normal curve
+        - Q-Q plot of residuals
+        - Box plots by group (for homogeneity check)
+        - Histogram per group
+    
+    Parameters:
+        long_df: DataFrame in long format
+        dv: Dependent variable column name
+        iv: Independent variable (grouping) column name
+        output_dir: Directory to save plots
+        prefix: Filename prefix (e.g., 'H1_difficulty')
+        dv_name: Display name for DV (optional)
+        iv_name: Display name for IV (optional)
+    """
+    import matplotlib.pyplot as plt
+    
+    if dv_name is None:
+        dv_name = dv
+    if iv_name is None:
+        iv_name = iv
+    
+    os.makedirs(output_dir, exist_ok=True)
+    
+    # Calculate residuals
+    group_means = long_df.groupby(iv)[dv].transform('mean')
+    residuals = long_df[dv] - group_means
+    
+    # Get groups
+    groups = sorted(long_df[iv].unique())
+    n_groups = len(groups)
+    
+    # Create figure with multiple subplots
+    fig = plt.figure(figsize=(16, 12))
+    
+    # 1. Histogram of residuals with normal curve
+    ax1 = fig.add_subplot(2, 3, 1)
+    n, bins, patches = ax1.hist(residuals, bins=20, density=True, alpha=0.7, 
+                                 color='steelblue', edgecolor='black')
+    
+    # Overlay normal distribution
+    mu, std = residuals.mean(), residuals.std()
+    x = np.linspace(residuals.min(), residuals.max(), 100)
+    ax1.plot(x, stats.norm.pdf(x, mu, std), 'r-', linewidth=2, label='Normal')
+    
+    ax1.set_xlabel('Residuals', fontsize=10)
+    ax1.set_ylabel('Density', fontsize=10)
+    ax1.set_title(f'Histogram of Residuals\n{dv_name}', fontsize=12)
+    ax1.legend()
+    
+    # Add Shapiro-Wilk result
+    sw_stat, sw_p = stats.shapiro(residuals)
+    ax1.text(0.05, 0.95, f'Shapiro-Wilk:\nW = {sw_stat:.3f}\np = {sw_p:.4f}',
+             transform=ax1.transAxes, fontsize=9, verticalalignment='top',
+             bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
+    
+    # 2. Q-Q Plot
+    ax2 = fig.add_subplot(2, 3, 2)
+    stats.probplot(residuals, dist="norm", plot=ax2)
+    ax2.set_title(f'Q-Q Plot of Residuals\n{dv_name}', fontsize=12)
+    ax2.get_lines()[0].set_markerfacecolor('steelblue')
+    ax2.get_lines()[0].set_markersize(5)
+    
+    # 3. Box plots by group (homogeneity of variance)
+    ax3 = fig.add_subplot(2, 3, 3)
+    group_data = [long_df[long_df[iv] == g][dv].values for g in groups]
+    bp = ax3.boxplot(group_data, labels=[str(g) for g in groups], patch_artist=True)
+    
+    colors = plt.cm.viridis(np.linspace(0.3, 0.9, n_groups))
+    for patch, color in zip(bp['boxes'], colors):
+        patch.set_facecolor(color)
+    
+    ax3.set_xlabel(iv_name, fontsize=10)
+    ax3.set_ylabel(dv_name, fontsize=10)
+    ax3.set_title(f'Distribution by {iv_name}\n(Homogeneity Check)', fontsize=12)
+    
+    # Add Levene's result
+    levene_stat, levene_p = stats.levene(*group_data, center='median')
+    ax3.text(0.05, 0.95, f"Levene's Test:\nW = {levene_stat:.3f}\np = {levene_p:.4f}",
+             transform=ax3.transAxes, fontsize=9, verticalalignment='top',
+             bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
+    
+    # 4. Histograms per group
+    ax4 = fig.add_subplot(2, 3, 4)
+    for i, g in enumerate(groups):
+        data = long_df[long_df[iv] == g][dv].values
+        ax4.hist(data, bins=10, alpha=0.5, label=f'{iv_name} {g}', 
+                 color=colors[i], edgecolor='black')
+    
+    ax4.set_xlabel(dv_name, fontsize=10)
+    ax4.set_ylabel('Frequency', fontsize=10)
+    ax4.set_title(f'Distributions by {iv_name}', fontsize=12)
+    ax4.legend(fontsize=8)
+    
+    # 5. Residuals vs Group (spread check)
+    ax5 = fig.add_subplot(2, 3, 5)
+    for i, g in enumerate(groups):
+        group_residuals = residuals[long_df[iv] == g]
+        x_jitter = np.random.normal(i, 0.1, len(group_residuals))
+        ax5.scatter(x_jitter, group_residuals, alpha=0.5, color=colors[i], s=30)
+    
+    ax5.axhline(y=0, color='red', linestyle='--', linewidth=1)
+    ax5.set_xticks(range(n_groups))
+    ax5.set_xticklabels([str(g) for g in groups])
+    ax5.set_xlabel(iv_name, fontsize=10)
+    ax5.set_ylabel('Residuals', fontsize=10)
+    ax5.set_title('Residuals by Group\n(Variance Homogeneity)', fontsize=12)
+    
+    # 6. Summary statistics table
+    ax6 = fig.add_subplot(2, 3, 6)
+    ax6.axis('off')
+    
+    # Create summary table
+    summary_data = []
+    for g in groups:
+        data = long_df[long_df[iv] == g][dv]
+        sw_stat_g, sw_p_g = stats.shapiro(data)
+        summary_data.append([
+            str(g),
+            f'{data.mean():.2f}',
+            f'{data.std():.2f}',
+            f'{len(data)}',
+            f'{sw_stat_g:.3f}',
+            f'{sw_p_g:.4f}'
+        ])
+    
+    table = ax6.table(
+        cellText=summary_data,
+        colLabels=[iv_name, 'Mean', 'SD', 'N', 'SW W', 'SW p'],
+        loc='center',
+        cellLoc='center'
+    )
+    table.auto_set_font_size(False)
+    table.set_fontsize(9)
+    table.scale(1.2, 1.5)
+    ax6.set_title('Group Statistics & Normality Tests', fontsize=12, pad=20)
+    
+    plt.suptitle(f'ANOVA Assumption Diagnostics: {dv_name} by {iv_name}', 
+                 fontsize=14, fontweight='bold', y=1.02)
+    
+    plt.tight_layout()
+    
+    # Save plot
+    plot_path = os.path.join(output_dir, f'{prefix}_assumption_plots.png')
+    plt.savefig(plot_path, dpi=150, bbox_inches='tight')
+    plt.close()
+    
+    return plot_path
 
 def check_missing_values(df, columns=None):
     """
@@ -234,7 +388,13 @@ def print_assumption_tests(long_df, dv, iv, dv_name=None, iv_name=None):
     }
 
 def save_assumption_tests(results, output_path):
-    """Save assumption test results to CSV."""
+    """
+    Save assumption test results to CSV.
+    
+    Parameters:
+        results: dict from print_assumption_tests()
+        output_path: Full path for output CSV file
+    """
     
     rows = [
         {

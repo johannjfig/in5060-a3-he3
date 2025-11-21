@@ -27,7 +27,8 @@ import os
 try:
     from assumption_tests import (
         check_missing_values, print_missing_values_report,
-        print_assumption_tests, save_assumption_tests
+        print_assumption_tests, save_assumption_tests,
+        create_assumption_plots
     )
     HAS_ASSUMPTION_TESTS = True
 except ImportError:
@@ -501,12 +502,20 @@ def main(csv_path):
     long_df.to_csv(os.path.join(output_dir, 'H2_long_format_data.csv'), index=False)
     print(f"  Saved: {output_dir}/H2_long_format_data.csv")
     
-    # Assumption tests
+    # Assumption tests - save to separate directory
     if HAS_ASSUMPTION_TESTS:
         assumption_dir = 'out/tests'
+        os.makedirs(assumption_dir, exist_ok=True)
         assumption_path = os.path.join(assumption_dir, 'H2_assumption_tests.csv')
         save_assumption_tests(assumption_results, assumption_path)
         print(f"  Saved: {assumption_path}")
+        
+        # Create assumption diagnostic plots
+        plot_path = create_assumption_plots(
+            long_df, 'Blocks', 'Latency', assumption_dir, 'H2_blocks',
+            'Blocks Moved', 'Latency (ms)'
+        )
+        print(f"  Saved: {plot_path}")
     
     # Summary
     print("\n" + "="*70)

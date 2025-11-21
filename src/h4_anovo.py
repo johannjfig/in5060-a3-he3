@@ -27,7 +27,8 @@ import os
 try:
     from assumption_tests import (
         check_missing_values, print_missing_values_report,
-        print_assumption_tests, save_assumption_tests
+        print_assumption_tests, save_assumption_tests,
+        create_assumption_plots
     )
     HAS_ASSUMPTION_TESTS = True
 except ImportError:
@@ -762,6 +763,19 @@ def main(csv_path):
         assumption_diff_path = os.path.join(assumption_dir, 'H4_assumption_tests_difficulty.csv')
         save_assumption_tests(assumption_results_diff, assumption_diff_path)
         print(f"  Saved: {assumption_diff_path}")
+        
+        # Create assumption diagnostic plots
+        plot_blocks_path = create_assumption_plots(
+            long_df, 'Blocks', 'Latency', assumption_dir, 'H4_blocks',
+            'Blocks Moved', 'Latency (ms)'
+        )
+        print(f"  Saved: {plot_blocks_path}")
+        
+        plot_diff_path = create_assumption_plots(
+            long_df, 'Difficulty', 'Latency', assumption_dir, 'H4_difficulty',
+            'Perceived Difficulty', 'Latency (ms)'
+        )
+        print(f"  Saved: {plot_diff_path}")
     
     # Save latency means
     latency_path = os.path.join(output_dir, 'H4_latency_means.csv')

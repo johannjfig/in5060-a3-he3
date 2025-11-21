@@ -25,7 +25,8 @@ import os
 try:
     from assumption_tests import (
         check_missing_values, print_missing_values_report,
-        print_assumption_tests, save_assumption_tests
+        print_assumption_tests, save_assumption_tests,
+        create_assumption_plots
     )
     HAS_ASSUMPTION_TESTS = True
 except ImportError:
@@ -729,6 +730,19 @@ def main(xlsx_path):
         assumption_ctrl_path = os.path.join(assumption_dir, 'H3_assumption_tests_control.csv')
         save_assumption_tests(assumption_results_ctrl, assumption_ctrl_path)
         print(f"  Saved: {assumption_ctrl_path}")
+        
+        # Create assumption diagnostic plots
+        plot_diff_path = create_assumption_plots(
+            long_df, 'Difficulty', 'Trial', assumption_dir, 'H3_difficulty',
+            'Perceived Difficulty', 'Trial'
+        )
+        print(f"  Saved: {plot_diff_path}")
+        
+        plot_ctrl_path = create_assumption_plots(
+            long_df, 'Control', 'Trial', assumption_dir, 'H3_control',
+            'Control Feeling', 'Trial'
+        )
+        print(f"  Saved: {plot_ctrl_path}")
     
     # Summary
     print("\n" + "="*70)
